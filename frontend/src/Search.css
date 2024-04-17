@@ -1,0 +1,24 @@
+.Search {
+  padding: 30px;
+}
+
+.Search-title {
+}
+
+.Search-header {
+  font-size: 30px;
+  font-weight: bolder;
+  margin-bottom: 15px;
+  width: 800px;
+}
+
+.Search-input {
+  width: 600px;
+  height: 50px;
+}
+
+.Search-result {
+  margin-top: 20px;
+  width: 600px;
+  /* height: calc(100vh - 180px); */
+}
