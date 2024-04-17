@@ -50,7 +50,7 @@ with open(path, "r", encoding="utf-8") as file:
     for page in pages:
         pageID = page['Parent_ID']
         for child in page['Child_IDs']:
-            adj_mat[child-1][pageID-1]=1
+            adj_mat[child-1][pageID-1]=1/len(page['Child_IDs'])
             
     rank=pagerank(adj_mat)
 
