@@ -14,8 +14,7 @@ class PathConfig:
     page_rank = os.path.join(BASE_DIR, "SE\\data\\page_rank.jsonl")
     data = os.path.join(BASE_DIR, "SE\\data\\data.jsonl")
     matrix = os.path.join(BASE_DIR, "SE\\data\\adj_matrix.jsonl")
-    tf = os.path.join(BASE_DIR, "SE\\data\\tf.jsonl")
-    idf = os.path.join(BASE_DIR, "SE\\data\\idf.jsonl")
+    tf_idf = os.path.join(BASE_DIR, "SE\\data\\tf_idf.jsonl")
 
 
 def index(request):
@@ -24,7 +23,7 @@ def index(request):
 
 def search(request):
     words = request.GET.get("words")
-    mode = request.GET.get("mode", "page_rank")
+    mode = request.GET.get("mode", "vsm")
     ps = PorterStemmer()
     stop_words = set(stopwords.words("english"))
     tokenizer = RegexpTokenizer(r"\w+")
@@ -43,6 +42,7 @@ def search(request):
 
     doc_list = list(doc_set)
     doc_rank_list = []
+    
     # page rank
     if mode == "page_rank":
         with open(PathConfig.page_rank, "r", encoding="utf-8") as file:
@@ -51,8 +51,23 @@ def search(request):
                 if line["page_id"] in doc_list:
                     doc_rank_list.append((line["page_id"], line["score"]))
         doc_rank_list.sort(key=lambda x: x[1], reverse=True)
-    res = {"words": words, "doc": doc_rank_list}
-    
+
     # VSM
+    if mode == "vsm":
+        # calculate weight vector of each document
+        # calculate tf*idf/max_tf
+        with open(PathConfig.tf_idf, "r", encoding="utf-8") as file:
+            for line in file:
+                line = json.loads(line)
+                if line["page_id"] in doc_list:
+                    max_tf = line["max_tf"]
+                    tf_line = line["tf"]
+                    score = 0
+                    for [key, tf, idf] in tf_line:
+                        if key in words:
+                            score += tf * idf / max_tf
+                    doc_rank_list.append((line["page_id"], score))
+        doc_rank_list.sort(key=lambda x: x[1], reverse=True)
     
+    res = {"words": words, "doc": doc_rank_list}
     return JsonResponse(res)

@@ -1,5 +1,10 @@
 import json
-import math
+
+idf = {}
+with open("./idf.json", "r", encoding="utf-8") as file:
+    for line in file:
+        line = json.loads(line)
+        idf[line["key"]] = line["idf"]
 
 with open("./index.json", "r", encoding="utf-8") as file:
     for line in file:
@@ -13,9 +18,9 @@ with open("./index.json", "r", encoding="utf-8") as file:
         for key, value in word_map.items():
             if value > max_tf:
                 max_tf = value
-            tf_list.append([key, value])
+            tf_list.append([key, value, idf.get(key)])
         data = {"page_id": line["page_id"], "max_tf": max_tf, "tf": tf_list}
         json_data = json.dumps(data)
-        with open("tf.json", "a") as file:
+        with open("tf_idf.json", "a") as file:
             file.write(json_data)
             file.write("\n")
