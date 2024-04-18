@@ -1,44 +1,10 @@
 import "./Search.css";
-import { Input } from "antd";
+import { Input, Radio, Spin } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const { Search } = Input;
-
-const mockRes = {
-  data: [
-    {
-      title: "computer page 1",
-      url: "www.baidu.com",
-      date: "Sat, 13 Apr 2024 14:45:26 GMT",
-      size: 2,
-      parent_link: ["1.com", "2.com"],
-      child_link: ["1.com", "2.com"],
-      frequency_list: {
-        computer: 5,
-        science: 4,
-        network: 4,
-        AI: 3,
-        search: 2,
-      },
-    },
-    {
-      title: "computer page 2",
-      url: "www.baidu.com",
-      date: "Sat, 13 Apr 2024 14:45:26 GMT",
-      size: 2,
-      parent_link: ["1.com", "2.com"],
-      child_link: ["1.com", "2.com"],
-      frequency_list: {
-        computer: 5,
-        science: 4,
-        network: 4,
-        AI: 3,
-        search: 2,
-      },
-    },
-  ],
-};
 
 function Result(props) {
   const { title, url, date, size, parent_link, child_link, frequency_list } =
@@ -69,8 +35,8 @@ function Result(props) {
           <div>
             {parent_link.map((item) => (
               <div>
-                <a href={"https://" + item} target="_blank" key={item}>
-                  {item}
+                <a href={"https://" + item.url} target="_blank" key={item.id}>
+                  {item.title}
                 </a>
               </div>
             ))}
@@ -81,8 +47,8 @@ function Result(props) {
           <div>
             {child_link.map((item) => (
               <div>
-                <a href={"https://" + item} target="_blank" key={item}>
-                  {item}
+                <a href={"https://" + item.url} target="_blank" key={item.id}>
+                  {item.title}
                 </a>
               </div>
             ))}
@@ -98,15 +64,43 @@ function SearchPage() {
   const navigate = useNavigate();
   const [inputValue, setInputValue] = useState("");
   const [result, setResult] = useState([]);
+  const [mode, setMode] = useState("page_rank");
+  const [loading, setLoading] = useState(false);
 
-  const searchAction = () => {
-    setResult(mockRes["data"]);
+  const onChange = (e) => {
+    console.log("radio checked", e.target.value);
+    setMode(e.target.value);
+  };
+
+  const searchAction = async (value, mode) => {
+    setLoading(true);
+    const res = await axios.get(
+      `http://localhost:8000/SE/search?words=${value}&mode=${mode}`
+    );
+    console.log(res);
+    const docList = res.data.doc_rank.map((item) => {
+      const frequency_list = {}
+      item.freq.forEach(pair=>{
+        frequency_list[pair[0]] = pair[1]
+      })
+      return {
+        title: item.Title,
+        url: item.URL,
+        date: item["Last Modified"],
+        size: item.Size,
+        parent_link: item["parent_id"],
+        child_link: item["child_id"],
+        frequency_list
+      };
+    });
+    setResult(docList);
+    setLoading(false);
   };
   const onSearch = (value, _e, info) => {
     navigate(`/search?input=${value}`);
     const textList = value.split(" ").filter((item) => item != "");
     console.log(textList);
-    searchAction();
+    searchAction(value, mode);
   };
   const getInput = useCallback(() => {
     const searchValue = location.search.split("=")[1];
@@ -117,7 +111,7 @@ function SearchPage() {
     const value = getInput();
     const decodeValue = decodeURIComponent(value);
     setInputValue(decodeValue);
-    searchAction();
+    searchAction(value, "page_rank");
   }, []);
   return (
     <div className="Search">
@@ -132,32 +126,38 @@ function SearchPage() {
             onChange={({ value }) => setInputValue(value)}
             enterButton
           />
+          <Radio.Group onChange={onChange} value={mode}>
+            <Radio value={"vsm"}>Vector Space Model</Radio>
+            <Radio value={"page_rank"}>Page Rank</Radio>
+          </Radio.Group>
         </div>
-        <div className="Search-result">
-          {result.map((item) => {
-            const {
-              title,
-              url,
-              date,
-              size,
-              parent_link,
-              child_link,
-              frequency_list,
-            } = item;
-            return (
-              <Result
-                key={title}
-                title={title}
-                url={url}
-                date={date}
-                size={size}
-                parent_link={parent_link}
-                child_link={child_link}
-                frequency_list={frequency_list}
-              />
-            );
-          })}
-        </div>
+        <Spin spinning={loading}>
+          <div className="Search-result">
+            {result.map((item) => {
+              const {
+                title,
+                url,
+                date,
+                size,
+                parent_link,
+                child_link,
+                frequency_list,
+              } = item;
+              return (
+                <Result
+                  key={title}
+                  title={title}
+                  url={url}
+                  date={date}
+                  size={size}
+                  parent_link={parent_link}
+                  child_link={child_link}
+                  frequency_list={frequency_list}
+                />
+              );
+            })}
+          </div>
+        </Spin>
       </div>
     </div>
   );
