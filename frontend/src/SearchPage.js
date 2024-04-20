@@ -7,19 +7,36 @@ import axios from "axios";
 const { Search } = Input;
 
 function Result(props) {
-  const { title, url, date, size, parent_link, child_link, frequency_list } =
-    props;
+  const {
+    title,
+    url,
+    date,
+    size,
+    parent_link,
+    child_link,
+    frequency_list,
+    searchAction,
+    mode,
+    score,
+  } = props;
   return (
-    <div style={{ marginBottom: "20px" }}>
-      <a href={"https://" + url} target="_blank">
+    <div
+      style={{
+        paddingBottom: "10px",
+        marginBottom: "10px",
+        borderBottom: "1px solid #1677ff",
+      }}
+    >
+      <a href={url} target="_blank">
         {url}
       </a>
       <div style={{ fontSize: "25px", fontWeight: "bold" }}>{title}</div>
-      <div style={{ fontSize: "10px", color: "gray" }}>
+      <div style={{ fontSize: "15px", color: "gray" }}>
         last modified date: <span style={{ color: "black" }}>{date}</span>; page
-        size: <span style={{ color: "black" }}>{size}</span>
+        size: <span style={{ color: "black" }}>{size}</span>; score:{" "}
+        <span style={{ color: "black" }}>{score.toFixed(5)}</span>
       </div>
-      <div style={{ display: "flex", width: "500px", color: "#4d5156" }}>
+      <div style={{ display: "flex", color: "#4d5156" }}>
         <div style={{ width: "150px" }}>
           <div>Top-5 Keywords</div>
           {Object.keys(frequency_list).map((item) => {
@@ -29,25 +46,32 @@ function Result(props) {
               </div>
             );
           })}
+          <a
+            onClick={() =>
+              searchAction(Object.keys(frequency_list).join(" "), mode)
+            }
+          >
+            get similar pages
+          </a>
         </div>
-        <div style={{ width: "150px" }}>
+        <div style={{ width: "200px" }}>
           <div>Parent Links</div>
           <div>
             {parent_link.map((item) => (
               <div>
-                <a href={"https://" + item.url} target="_blank" key={item.id}>
+                <a href={item.url} target="_blank" key={item.id}>
                   {item.title}
                 </a>
               </div>
             ))}
           </div>
         </div>
-        <div style={{ width: "150px" }}>
+        <div style={{ width: "350px" }}>
           <div>Child Links</div>
-          <div>
+          <div style={{ maxHeight: 150, overflowY: "scroll" }}>
             {child_link.map((item) => (
               <div>
-                <a href={"https://" + item.url} target="_blank" key={item.id}>
+                <a href={item.url} target="_blank" key={item.id}>
                   {item.title}
                 </a>
               </div>
@@ -68,21 +92,24 @@ function SearchPage() {
   const [loading, setLoading] = useState(false);
 
   const onChange = (e) => {
-    console.log("radio checked", e.target.value);
     setMode(e.target.value);
   };
 
   const searchAction = async (value, mode) => {
     setLoading(true);
+    const decodeValue = decodeURIComponent(value);
+    if (inputValue != decodeValue) {
+      setInputValue(decodeValue);
+    }
     const res = await axios.get(
       `http://localhost:8000/SE/search?words=${value}&mode=${mode}`
     );
     console.log(res);
     const docList = res.data.doc_rank.map((item) => {
-      const frequency_list = {}
-      item.freq.forEach(pair=>{
-        frequency_list[pair[0]] = pair[1]
-      })
+      const frequency_list = {};
+      item.freq.forEach((pair) => {
+        frequency_list[pair[0]] = pair[1];
+      });
       return {
         title: item.Title,
         url: item.URL,
@@ -90,7 +117,8 @@ function SearchPage() {
         size: item.Size,
         parent_link: item["parent_id"],
         child_link: item["child_id"],
-        frequency_list
+        frequency_list,
+        score: item["score"],
       };
     });
     setResult(docList);
@@ -116,21 +144,24 @@ function SearchPage() {
   return (
     <div className="Search">
       <div className="Search-title">
-        <div className="Search-header">CSIT 5930 Search Engine</div>
-        <div className="Search-input">
-          <Search
-            placeholder="input search text"
-            size="large"
-            onSearch={onSearch}
-            value={inputValue}
-            onChange={({ value }) => setInputValue(value)}
-            enterButton
-          />
-          <Radio.Group onChange={onChange} value={mode}>
-            <Radio value={"vsm"}>Vector Space Model</Radio>
-            <Radio value={"page_rank"}>Page Rank</Radio>
-          </Radio.Group>
+        <div className="top-box">
+          <div className="Search-header">CSIT 5930 Search Engine</div>
+          <div className="Search-input">
+            <Search
+              placeholder="input search text"
+              size="large"
+              onSearch={onSearch}
+              value={inputValue}
+              onChange={({ value }) => setInputValue(value)}
+              enterButton
+            />
+            <Radio.Group onChange={onChange} value={mode}>
+              <Radio value={"vsm"}>Vector Space Model</Radio>
+              <Radio value={"page_rank"}>Page Rank</Radio>
+            </Radio.Group>
+          </div>
         </div>
+
         <Spin spinning={loading}>
           <div className="Search-result">
             {result.map((item) => {
@@ -142,6 +173,7 @@ function SearchPage() {
                 parent_link,
                 child_link,
                 frequency_list,
+                score,
               } = item;
               return (
                 <Result
@@ -153,6 +185,9 @@ function SearchPage() {
                   parent_link={parent_link}
                   child_link={child_link}
                   frequency_list={frequency_list}
+                  searchAction={searchAction}
+                  mode={mode}
+                  score={score}
                 />
               );
             })}
