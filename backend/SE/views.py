@@ -2,6 +2,7 @@ from django.http import HttpResponse, JsonResponse
 from nltk.stem import PorterStemmer
 from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
+import numpy as np
 from . import apps
 
 import json
@@ -57,17 +58,23 @@ def search(request):
     if mode == "vsm":
         # calculate weight vector of each document
         # calculate tf*idf/max_tf
+        vector1 = np.ones(len(words))
         with open(PathConfig.tf_idf, "r", encoding="utf-8") as file:
             for line in file:
                 line = json.loads(line)
                 if line["page_id"] in doc_list:
                     max_tf = line["max_tf"]
                     tf_line = line["tf"]
-                    score = 0
+                    vector_list = []
                     for [key, tf, idf] in tf_line:
                         if key in words:
-                            score += tf * idf / max_tf
-                    doc_rank_list.append((line["page_id"], score))
+                            vector_list.append(tf * idf / max_tf)
+                    vector2 = np.array(vector_list)
+                    if len(vector_list)<len(words):
+                         vector2 = np.concatenate((vector2, np.zeros(len(words)-len(vector_list))))
+                    print(vector1,vector2)
+                    cos_sim = np.dot(vector1, vector2) / (np.linalg.norm(vector1) * np.linalg.norm(vector2))
+                    doc_rank_list.append((line["page_id"], cos_sim))
         doc_rank_list.sort(key=lambda x: x[1], reverse=True)
 
     # get page information
