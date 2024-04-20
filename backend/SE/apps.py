@@ -12,13 +12,21 @@ class SeConfig(AppConfig):
     data = os.path.join(BASE_DIR, "SE\\data\\data.jsonl")
     matrix = os.path.join(BASE_DIR, "SE\\data\\adj_matrix.jsonl")
     tf = os.path.join(BASE_DIR, "SE\\data\\tf.jsonl")
+    inverted_index = os.path.join(BASE_DIR, "SE\\data\\inverted_index.jsonl")
+    
     page_data = {}
     link = {}
     top_5 = {}
+    keywords = []
 
     def ready(self):
         print("download stopwords")
         nltk.download("stopwords")
+        
+        with open(SeConfig.inverted_index, "r", encoding="utf-8") as file:
+            for line in file:
+                line = json.loads(line)
+                SeConfig.keywords.append(line["key"])
 
         with open(SeConfig.matrix, "r", encoding="utf-8") as file:
             for line in file:

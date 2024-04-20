@@ -1,6 +1,6 @@
 import "./Search.css";
-import { Input, Radio, Spin } from "antd";
-import { useCallback, useEffect, useState } from "react";
+import { Input, Radio, Spin, Button } from "antd";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -83,6 +83,29 @@ function Result(props) {
   );
 }
 
+const KeywordList = (props) => {
+  const { keywords } = props;
+  const [num, setNum] = useState(50);
+  const [list, setList] = useState(keywords.slice(0, 50));
+  const addMore = () => {
+    const currNum = num;
+    setNum(currNum + 50);
+    setList(keywords.slice(0, currNum + 50));
+  };
+
+  return (
+    <div className="Keywords">
+      <div style={{ fontSize: "25px", fontWeight: "bold" }}>Keywords List</div>
+      {list.map((item) => {
+        return <div key={item}>{item}</div>;
+      })}
+      <Button type="text" onClick={addMore}>
+        load more keywords
+      </Button>
+    </div>
+  );
+};
+
 function SearchPage() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -90,6 +113,7 @@ function SearchPage() {
   const [result, setResult] = useState([]);
   const [mode, setMode] = useState("page_rank");
   const [loading, setLoading] = useState(false);
+  const [keywords, setKeywords] = useState([]);
 
   const onChange = (e) => {
     setMode(e.target.value);
@@ -135,12 +159,20 @@ function SearchPage() {
     return searchValue;
   }, [location]);
 
+  const getKeywords = async () => {
+    const res = await axios.get(`http://localhost:8000/SE/get_all_keywords`);
+    console.log(res);
+    setKeywords(res.data.keywords);
+  };
+
   useEffect(() => {
     const value = getInput();
     const decodeValue = decodeURIComponent(value);
     setInputValue(decodeValue);
     searchAction(value, "page_rank");
+    getKeywords();
   }, []);
+
   return (
     <div className="Search">
       <div className="Search-title">
@@ -192,6 +224,9 @@ function SearchPage() {
               );
             })}
           </div>
+          <Spin spinning={keywords.length === 0}>
+            {keywords.length !== 0 && <KeywordList keywords={keywords} />}
+          </Spin>
         </Spin>
       </div>
     </div>

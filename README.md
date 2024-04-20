@@ -1,6 +1,8 @@
 # SearchEngine
 Repo of CSIT5930 course project
 
+![alt text](image.png)
+
 # Start Project
 1. install python requirements
    ```

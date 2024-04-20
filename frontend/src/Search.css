@@ -1,11 +1,16 @@
 .Search {
   width: 100%;
-  padding:30px 0;
+  /* padding: 30px 0; */
+  position: relative;
 }
 
 .top-box {
   width: 100%;
   border-bottom: 1px solid #1677ff;
+  height: 130px;
+  position: fixed;
+  background-color: white;
+  z-index: 9;
 }
 
 .Search-title {
@@ -27,9 +32,24 @@
 }
 
 .Search-result {
+  position: absolute;
+  left: 0;
+  top: 130px;
   margin-top: 20px;
   width: 700px;
   padding-left: 200px;
 
   /* height: calc(100vh - 180px); */
+}
+
+.Keywords {
+  position: fixed;
+  padding: 10px 20px;
+  top: 200px;
+  right: 100px;
+  width: 300px;
+  height: 500px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  border: 1px solid #1677ff;
 }

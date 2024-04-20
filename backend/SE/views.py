@@ -103,3 +103,8 @@ def search(request):
         "doc_rank": doc_info_list,
     }
     return JsonResponse(res)
+
+
+def get_all_keywords(request):
+    res = {"keywords": apps.SeConfig.keywords}
+    return JsonResponse(res)
