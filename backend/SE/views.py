@@ -34,13 +34,20 @@ def search(request):
 
     # Boolean
     doc_set = set()
+    doc_map = {}
     with open(PathConfig.inverted_index, "r", encoding="utf-8") as file:
         for line in file:
             line = json.loads(line)
             if line["key"] in words:
                 content = line["content"]
+                temp_doc_set = set()
                 for [doc, pos] in content:
                     doc_set.add(doc)
+                    temp_doc_set.add(doc)
+                    # Boolean weight
+                for doc in temp_doc_set:
+                    doc_map[doc] = doc_map.get(doc) + 1 if doc_map.get(doc) else 1
+                temp_doc_set.clear()
 
     doc_list = list(doc_set)
     doc_rank_list = []
@@ -51,7 +58,9 @@ def search(request):
             for line in file:
                 line = json.loads(line)
                 if line["page_id"] in doc_list:
-                    doc_rank_list.append((line["page_id"], line["score"]))
+                    doc_rank_list.append(
+                        (line["page_id"], line["score"] + doc_map.get(line["page_id"]))
+                    )
         doc_rank_list.sort(key=lambda x: x[1], reverse=True)
 
     # VSM
@@ -70,11 +79,17 @@ def search(request):
                         if key in words:
                             vector_list.append(tf * idf / max_tf)
                     vector2 = np.array(vector_list)
-                    if len(vector_list)<len(words):
-                         vector2 = np.concatenate((vector2, np.zeros(len(words)-len(vector_list))))
-                    print(vector1,vector2)
-                    cos_sim = np.dot(vector1, vector2) / (np.linalg.norm(vector1) * np.linalg.norm(vector2))
-                    doc_rank_list.append((line["page_id"], cos_sim))
+                    if len(vector_list) < len(words):
+                        vector2 = np.concatenate(
+                            (vector2, np.zeros(len(words) - len(vector_list)))
+                        )
+                    print(vector1, vector2)
+                    cos_sim = np.dot(vector1, vector2) / (
+                        np.linalg.norm(vector1) * np.linalg.norm(vector2)
+                    )
+                    doc_rank_list.append(
+                        (line["page_id"], cos_sim + doc_map.get(line["page_id"]))
+                    )
         doc_rank_list.sort(key=lambda x: x[1], reverse=True)
 
     # get page information
