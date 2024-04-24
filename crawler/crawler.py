@@ -76,7 +76,13 @@ def add_link_relation(parent_id, child_id):
 def process_page(url, soup, parent_id):
     # Extract and store relevant information from the page
     # For example, you can extract the title, content, etc.
-    title = soup.title.text
+
+    h1_element = soup.find('h1')
+    if h1_element:
+        title = h1_element.get_text()
+    else:
+        title = soup.title.text
+
     content = soup.get_text()
 
     # Retrieve the last modified date of the page
