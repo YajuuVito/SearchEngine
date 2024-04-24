@@ -3,3 +3,4 @@ Django==5.0.4
 nltk==3.8.1
 numpy==1.26.4
 Requests==2.31.0
+django-cors-headers==4.3.1
