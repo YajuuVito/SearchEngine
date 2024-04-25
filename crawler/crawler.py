@@ -4,6 +4,7 @@ from urllib.parse import urljoin
 from datetime import datetime
 from collections import deque
 import json
+import os
 
 
 def crawl(start_url, max_pages):
@@ -25,6 +26,9 @@ def crawl(start_url, max_pages):
                 absolute_url = urljoin(url, href)
                 if absolute_url not in visited:
                     queue.append((absolute_url, page_id))
+                else:
+                    # Store the parent-child link relation in the file structure
+                    add_link_relation(page_id, page_url_to_id_list[absolute_url])
 
 
 def get_last_modified(url):
@@ -70,7 +74,8 @@ def add_link_relation(parent_id, child_id):
         return
     if parent_id not in file_structure:
         file_structure[parent_id] = []
-    file_structure[parent_id].append(child_id)
+    if child_id not in file_structure[parent_id]:
+        file_structure[parent_id].append(child_id)
 
 
 def process_page(url, soup, parent_id):
@@ -93,7 +98,8 @@ def process_page(url, soup, parent_id):
 
     # Assign a unique page-ID to the current page
     page_id = generate_page_id()
-    page_id_list[page_id] = url
+    page_id_to_url_list[page_id] = url
+    page_url_to_id_list[url] = page_id
 
     # Store the parent-child link relation in the file structure
     add_link_relation(parent_id, page_id)
@@ -130,22 +136,33 @@ def process_page(url, soup, parent_id):
     return page_id
 
 
+def delete_data_file(file_path):
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        print("已删除 "+file_path+" 文件")
+    else:
+        print("当前目录下不存在 "+file_path+" 文件")
+
+
 # Example usage
+delete_data_file("data.json")
+delete_data_file("adj_matrix.json")
 start_url = 'https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm'
 max_pages = 500
 page_counter = 1
 visited = set()
 file_structure = {}
-page_id_list = {}
+page_id_to_url_list = {}
+page_url_to_id_list = {}
 crawl(start_url, max_pages)
 
 # Print the file structure
 print("File Structure:")
 for parent_id, child_ids in file_structure.items():
-    print("Parent ID:", parent_id, "Parent url:", page_id_list[parent_id])
+    print("Parent ID:", parent_id, "Parent url:", page_id_to_url_list[parent_id])
     print("Child IDs:", child_ids)
     for child_id in child_ids:
-        print("Child url:", page_id_list[child_id])
+        print("Child url:", page_id_to_url_list[child_id])
     print()
 
     data = {
