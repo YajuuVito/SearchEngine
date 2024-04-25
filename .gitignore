@@ -2,3 +2,4 @@
 
 *.drawio
 *.drawio.bkp
+**/__pycache__
