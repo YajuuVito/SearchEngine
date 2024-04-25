@@ -173,6 +173,10 @@ function SearchPage() {
     getKeywords();
   }, []);
 
+  const onInputChange = (v) => {
+    setInputValue(v.target.value);
+  };
+
   return (
     <div className="Search">
       <div className="Search-title">
@@ -184,7 +188,7 @@ function SearchPage() {
               size="large"
               onSearch={onSearch}
               value={inputValue}
-              onChange={({ value }) => setInputValue(value)}
+              onChange={onInputChange}
               enterButton
             />
             <Radio.Group onChange={onChange} value={mode}>
