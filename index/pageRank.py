@@ -38,10 +38,11 @@ def pagerank(M, d: float = 0.85):
     while(np.linalg.norm(w - v) >= 1e-10):
         w = v
         v = M_hat @ w + (1 - d)
+        v=v/sum(v)
     return v
 
 pages = []
-path = "../crawler/adj_matrix.json"
+path = "../crawler2/adj_matrix.json"
 with open(path, "r", encoding="utf-8") as file:
     for line in file:
         pages.append(json.loads(line))
