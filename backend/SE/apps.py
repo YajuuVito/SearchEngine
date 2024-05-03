@@ -9,10 +9,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 class SeConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "SE"
-    data = os.path.join(BASE_DIR, "SE\\data\\data.jsonl")
-    matrix = os.path.join(BASE_DIR, "SE\\data\\adj_matrix.jsonl")
-    tf = os.path.join(BASE_DIR, "SE\\data\\tf.jsonl")
-    inverted_index = os.path.join(BASE_DIR, "SE\\data\\inverted_index.jsonl")
+    data = os.path.join(BASE_DIR, "SE\\data\\data.json")
+    matrix = os.path.join(BASE_DIR, "SE\\data\\adj_matrix.json")
+    tf = os.path.join(BASE_DIR, "SE\\data\\tf.json")
+    inverted_index = os.path.join(BASE_DIR, "SE\\data\\inverted_index.json")
     
     page_data = {}
     link = {}
