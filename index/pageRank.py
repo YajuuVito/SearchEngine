@@ -38,6 +38,7 @@ def pagerank(M, d: float = 0.85):
     while(np.linalg.norm(w - v) >= 1e-10):
         w = v
         v = M_hat @ w + (1 - d)
+        v=v/sum(v)
     return v
 
 pages = []
