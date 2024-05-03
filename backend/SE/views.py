@@ -12,11 +12,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 class PathConfig:
-    index = os.path.join(BASE_DIR, "SE\\data\\index.jsonl")
-    inverted_index = os.path.join(BASE_DIR, "SE\\data\\inverted_index.jsonl")
-    page_rank = os.path.join(BASE_DIR, "SE\\data\\page_rank.jsonl")
-    matrix = os.path.join(BASE_DIR, "SE\\data\\adj_matrix.jsonl")
-    tf_idf = os.path.join(BASE_DIR, "SE\\data\\tf_idf.jsonl")
+    index = os.path.join(BASE_DIR, "SE\\data\\index.json")
+    inverted_index = os.path.join(BASE_DIR, "SE\\data\\inverted_index.json")
+    page_rank = os.path.join(BASE_DIR, "SE\\data\\page_rank.json")
+    matrix = os.path.join(BASE_DIR, "SE\\data\\adj_matrix.json")
+    tf_idf = os.path.join(BASE_DIR, "SE\\data\\tf_idf.json")
 
 
 def index(request):
