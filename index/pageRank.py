@@ -9,6 +9,7 @@ import json
 
 
 import numpy as np
+import os
 
 """
 Page rank implementation from Wikipedia
@@ -54,6 +55,9 @@ with open(path, "r", encoding="utf-8") as file:
             adj_mat[child-1][pageID-1]=1/len(page['Child_IDs'])
             
     rank=pagerank(adj_mat)
+    
+    if os.path.exists("page_rank.json"):
+        os.remove("page_rank.json")
 
     for i in range(297):
         # 创建一个Python对象

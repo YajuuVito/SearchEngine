@@ -6,6 +6,7 @@ Created on Thu Apr 18 13:03:47 2024
 """
 
 import json
+import os
 
 pages = []
 path = "./index.json"
@@ -19,7 +20,10 @@ for page in pages:
             posting[index[0]].append((page['page_id'],index[1]))
         else:
             posting[index[0]]=[(page['page_id'],index[1])]
-            
+
+if os.path.exists("inverted_index.json"):
+    os.remove("inverted_index.json")
+
             
 for key in posting:
         data = {

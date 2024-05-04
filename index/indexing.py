@@ -11,6 +11,7 @@ import json
 from nltk.stem import PorterStemmer
 from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
+import os
 
 #to use nltk you need to 
 #1. pip install nltk
@@ -25,7 +26,6 @@ def write(page):
 
         # 将Python对象转换为JSON字符串
         json_data = json.dumps(data)
-        print(json_data)
 
         # 写入JSON字符串到文件
         with open("index.json", "a") as file:
@@ -42,7 +42,10 @@ tokenizer = RegexpTokenizer(r'\w+')
 with open(path, "r", encoding="utf-8") as file:
     for line in file:
         pages.append(json.loads(line))
-    
+        
+    if os.path.exists("index.json"):
+        os.remove("index.json")
+        
     for page in pages:
         page['Content']=tokenizer.tokenize(page['Content'].lower())
         page['Content'] = [w for w in page['Content'] if not w in stop_words]
