@@ -14,15 +14,15 @@ def crawl(start_url, max_pages):
         url, parent_id = queue.popleft()
         visited.add(url)
         response = requests.get(url)
-        soup = BeautifulSoup(response.text, 'html.parser')
+        soup = BeautifulSoup(response.text, "html.parser")
         page_id = process_page(url, soup, parent_id)
         visited.add(url)
 
         # Enqueue child pages
         if len(visited) < max_pages:
-            links = soup.find_all('a')
+            links = soup.find_all("a")
             for link in links:
-                href = link.get('href')
+                href = link.get("href")
                 absolute_url = urljoin(url, href)
                 if absolute_url not in visited:
                     queue.append((absolute_url, page_id))
@@ -36,14 +36,16 @@ def get_last_modified(url):
     response = requests.head(url)
 
     # Retrieve the Last-Modified header
-    last_modified_header = response.headers.get('Last-Modified')
+    last_modified_header = response.headers.get("Last-Modified")
 
     if last_modified_header:
         # Parse the last modified date from the header
-        last_modified_date = datetime.strptime(last_modified_header, '%a, %d %b %Y %H:%M:%S %Z')
-        return last_modified_date.strftime('%Y-%m-%d %H:%M:%S')
+        last_modified_date = datetime.strptime(
+            last_modified_header, "%a, %d %b %Y %H:%M:%S %Z"
+        )
+        return last_modified_date.strftime("%Y-%m-%d %H:%M:%S")
 
-    return 'Unknown'
+    return "Unknown"
 
 
 def get_page_size(url):
@@ -51,7 +53,7 @@ def get_page_size(url):
     response = requests.head(url)
 
     # Retrieve the Content-Length header
-    content_length_header = response.headers.get('Content-Length')
+    content_length_header = response.headers.get("Content-Length")
 
     if content_length_header:
         # Convert the content length to an integer
@@ -78,11 +80,20 @@ def add_link_relation(parent_id, child_id):
         file_structure[parent_id].append(child_id)
 
 
+def add_link_relation_logical(parent_id, child_id):
+    if parent_id == 0:
+        # root page
+        return
+    if parent_id not in file_structure_logical:
+        file_structure_logical[parent_id] = []
+    file_structure_logical[parent_id].append(child_id)
+
+
 def process_page(url, soup, parent_id):
     # Extract and store relevant information from the page
     # For example, you can extract the title, content, etc.
 
-    h1_element = soup.find('h1')
+    h1_element = soup.find("h1")
     if h1_element:
         title = h1_element.get_text()
     else:
@@ -100,9 +111,11 @@ def process_page(url, soup, parent_id):
     page_id = generate_page_id()
     page_id_to_url_list[page_id] = url
     page_url_to_id_list[url] = page_id
+    page_id_list[page_id] = url
 
     # Store the parent-child link relation in the file structure
     add_link_relation(parent_id, page_id)
+    add_link_relation_logical(parent_id, page_id)
 
     # Print the URL and title of the processed page
     print("page_id:", page_id)
@@ -122,7 +135,7 @@ def process_page(url, soup, parent_id):
         "Title": title,
         "Last Modified": last_modified,
         "Size": page_size,
-        "Content": content
+        "Content": content,
     }
 
     # 将Python对象转换为JSON字符串
@@ -139,21 +152,24 @@ def process_page(url, soup, parent_id):
 def delete_data_file(file_path):
     if os.path.exists(file_path):
         os.remove(file_path)
-        print("已删除 "+file_path+" 文件")
+        print("已删除 " + file_path + " 文件")
     else:
-        print("当前目录下不存在 "+file_path+" 文件")
+        print("当前目录下不存在 " + file_path + " 文件")
 
 
 # Example usage
 delete_data_file("data.json")
 delete_data_file("adj_matrix.json")
-start_url = 'https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm'
+delete_data_file("adj_matrix_logical.json")
+start_url = "https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm"
 max_pages = 500
 page_counter = 1
 visited = set()
 file_structure = {}
+file_structure_logical = {}
 page_id_to_url_list = {}
 page_url_to_id_list = {}
+page_id_list = {}
 crawl(start_url, max_pages)
 
 # Print the file structure
@@ -173,5 +189,24 @@ for parent_id, child_ids in file_structure.items():
     json_adj_matrix = json.dumps(data)
 
     with open("adj_matrix.json", "a") as file_adj_matrix:
+        file_adj_matrix.write(json_adj_matrix)
+        file_adj_matrix.write("\n")
+        
+        
+for parent_id, child_ids in file_structure_logical.items():
+    print("Parent ID:", parent_id, "Parent url:", page_id_list[parent_id])
+    print("Child IDs:", child_ids)
+    for child_id in child_ids:
+        print("Child url:", page_id_list[child_id])
+    print()
+
+    data = {
+        "Parent_ID": parent_id,
+        "Child_IDs": child_ids,
+    }
+
+    json_adj_matrix = json.dumps(data)
+
+    with open("adj_matrix_logical.json", "a") as file_adj_matrix:
         file_adj_matrix.write(json_adj_matrix)
         file_adj_matrix.write("\n")
