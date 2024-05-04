@@ -35,7 +35,7 @@ Repo of CSIT5930 course project
    python tf.py
    ```
 4. move data to `backend\SE\data` 
-   - adj_matrix.json
+   - adj_matrix_logical.json
    - data.json
    - idf.json
    - index.json

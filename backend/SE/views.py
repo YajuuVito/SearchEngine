@@ -15,7 +15,7 @@ class PathConfig:
     index = os.path.join(BASE_DIR, "SE\\data\\index.json")
     inverted_index = os.path.join(BASE_DIR, "SE\\data\\inverted_index.json")
     page_rank = os.path.join(BASE_DIR, "SE\\data\\page_rank.json")
-    matrix = os.path.join(BASE_DIR, "SE\\data\\adj_matrix.json")
+    matrix = os.path.join(BASE_DIR, "SE\\data\\adj_matrix_logical.json")
     tf_idf = os.path.join(BASE_DIR, "SE\\data\\tf_idf.json")
 
 
